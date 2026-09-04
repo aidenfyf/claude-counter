@@ -9,7 +9,7 @@ desktop widget and the iPhone widget are pixel-identical by construction.
 GPU note: backdrop-filter (the glass blur) needs real compositing. Software
 rendering silently drops it and the tiles come out as flat dark rectangles. That
 is the failure this script is most exposed to, so check_glass() measures the
-rendered pixels for differential colour transmission rather than trusting flags.
+rendered pixels for differential color transmission rather than trusting flags.
 """
 
 import json

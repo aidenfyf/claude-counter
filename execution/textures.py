@@ -46,7 +46,7 @@ JS = ROOT / "widgets" / "ClaudeCounter.js"
 START = "// TEXTURE_B64_START"
 END = "// TEXTURE_B64_END"
 
-# Widget ground colour, matching BG in ClaudeCounter.js
+# Widget ground color, matching BG in ClaudeCounter.js
 BASE = (0x0a, 0x0a, 0x0d)
 
 # A large widget at @3x. Slightly different on other devices, but only by a few

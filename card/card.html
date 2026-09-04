@@ -44,13 +44,13 @@
 
   /* ---- 1. lit background --------------------------------------------------- */
   /*
-    GEOMETRY, not alpha. The previous pair centred on individual tiles - .glow.a at
+    GEOMETRY, not alpha. The previous pair centered on individual tiles - .glow.a at
     (210,90) sat on the top-left tile, .glow.b at (1040,180) on the top-right - so
-    the grid came out colour-coded by COLUMN while its meaning is organised by ROW
+    the grid came out colour-coded by COLUMN while its meaning is organized by ROW
     (row 1 = volume, row 2 = quality). Halving the alphas dimmed the light without
     moving it, and a plain tile still out-warmed the .hot ones.
 
-    Now: one very wide, very diffuse wash centred on the card's own centreline, so
+    Now: one very wide, very diffuse wash centered on the card's own centreline, so
     illumination falls off gently and symmetrically and no tile owns a light. .hot
     is left as the only thing that says "look here".
   */
@@ -66,7 +66,7 @@
   /* ---- header -------------------------------------------------------------- */
   /*
     The chip used to be a filled gradient pill with a hard white top lip and a
-    coloured outer glow - the Aqua recipe, on a different edge language from the
+    colored outer glow - the Aqua recipe, on a different edge language from the
     tiles, sitting top-left where the eye lands first. It also carried more ink
     mass than any numeral, so the loudest thing on the card was the time-window
     label. Now: accent as TEXT on a faint tint, same rim logic as the tiles.
@@ -139,7 +139,7 @@
     a character count, which shrank "1 in 3.9" (247px wide) while leaving "24,988"
     (330px) alone - and flipped size as the ratio crossed a decimal. Ratios are
     rounded to whole numbers now, so nothing needs shrinking.
-    tabular-nums dropped: it centres a leading "1" in a full advance width and
+    tabular-nums dropped: it centers a leading "1" in a full advance width and
     optically indents the numeral 5px right of its own label. Nothing here scrolls.
   */
   .num  { font-size: 52px; font-weight: 660; letter-spacing: -.035em; line-height: 1; }

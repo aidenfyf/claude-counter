@@ -207,7 +207,7 @@ function line(into, text, font, color, scale) {
 }
 
 /**
- * A tile. Uses a GRADIENT rather than a flat colour: a single uniform fill reads
+ * A tile. Uses a GRADIENT rather than a flat color: a single uniform fill reads
  * dead next to the rest of the home screen, and the original card's tiles were
  * lit from the top-left. Subtle on purpose - the whole range is 0.03 alpha wide.
  */
@@ -238,7 +238,7 @@ function panel(into, fill, border, radius) {
 }
 
 /** One stat tile: big numeral over a small label.
- *  `label` may be a string, or [plain, emphasised] to brighten the payoff word. */
+ *  `label` may be a string, or [plain, emphasized] to brighten the payoff word. */
 function tile(into, value, label) {
   const s = panel(into, TILE_FILL, TILE_BD, 17);
   line(s, value, Font.boldSystemFont(22), INK, 0.5);

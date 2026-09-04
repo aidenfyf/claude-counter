@@ -20,7 +20,7 @@ The idea is not mine. I saw a "July with Claude Code" card on Threads — posted
 date instead of being made by hand.
 
 This is a rewrite rather than a copy. It keeps their structure (dark tile grid, big
-numeral over a small label, one accent colour on the word that carries the joke)
+numeral over a small label, one accent color on the word that carries the joke)
 and changes almost everything else: a rolling window instead of a calendar month,
 different stats, glass tiles, an automated pipeline, and a second composition drawn
 natively on the phone. If you like this, the original idea was theirs.
@@ -87,11 +87,11 @@ The Mac mirrors `stats.json` into Scriptable's iCloud folder automatically.
 The phone widget is **drawn natively, not shown as an image** - every numeral and
 label is real text, so it renders at exact device resolution instead of being a
 resampled screenshot. It is monochrome by default (`ACCENT = false` at the top of
-the file if you want the colour back).
+the file if you want the color back).
 
 Its background texture is baked by `execution/textures.py` and embedded in the
 script as base64, so the widget has no runtime file dependency. Re-run that script
-only if you change the card's colours or dimensions.
+only if you change the card's colors or dimensions.
 
 ## Customising
 
@@ -219,7 +219,7 @@ that still screenshots at exactly the right dimensions. `render.py` checks the l
 DOM for the expected tile count and asserts the chamfer rim is present in the
 actual pixels.
 
-## Licence
+## License
 
 MIT — see [LICENSE](LICENSE). The original card that inspired this is not mine and
 is not included here.
