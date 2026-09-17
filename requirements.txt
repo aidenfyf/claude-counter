@@ -1,0 +1,7 @@
+# The counter needs a YAML reader for config/*.yml and a pixel prober for
+# render.py's glass check. Nothing else - no server, no SDK, no account.
+#
+# These live in a repo-local .venv that execution/refresh.sh creates and repairs
+# on its own, so a Homebrew python3 upgrade cannot empty them out from under it.
+PyYAML>=6.0
+Pillow>=10.0

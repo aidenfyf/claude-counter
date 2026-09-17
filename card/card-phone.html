@@ -100,6 +100,7 @@
   /* 28px = 9.3pt at 3x, clearing the legibility floor this file sets above.
      #85838f gives 4.5:1 AA; #7a7885 measured 3.65. */
   footer { margin-top: 26px; flex-shrink: 0; font-size: 28px; color: #85838f; }
+  .stale { color: #ff7a45; font-weight: 700; }
 </style>
 
 <div class="glow a"></div><div class="glow b"></div>
@@ -127,6 +128,10 @@
 <script>
   const S = /*__STATS__*/ null;
   const n = v => v.toLocaleString("en-US");
+  // Minutes -> "3h" / "8 days". Only ever shown when the card has gone stale.
+  const age = (m) => m < 90 ? `${m}m`
+    : m < 60 * 36 ? `${Math.round(m / 60)}h`
+    : `${Math.round(m / 1440)} days`;
   const $ = id => document.getElementById(id);
   const money = v => "$" + Math.round(v).toLocaleString("en-US");
 
@@ -147,8 +152,13 @@
       tile(n(s.claude.commits), "commits by Claude");
 
     const w = new Date(s.generated_at);
-    $("stamp").textContent = `${s.activity.active_days} active days · updated `
+    const stamp = `${s.activity.active_days} active days · updated `
       + w.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    if (s.stale_min != null) {
+      $("stamp").innerHTML = `<span class="stale">NOT COUNTING &middot; ${age(s.stale_min)} behind</span><br>${stamp}`;
+    } else {
+      $("stamp").textContent = stamp;
+    }
   }
 
   if (S) render(S);

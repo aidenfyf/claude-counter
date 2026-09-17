@@ -18,10 +18,37 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STATS = ROOT / "out" / "stats.json"
+
+# out/stats.json is rewritten only when count.py succeeds. render.py deliberately
+# still runs when it does not (refresh.sh is not `set -e`, so a partial failure
+# stays visible) - which means a broken count leaves the card re-rendering the last
+# good numbers under a brand-new file mtime. Everything downstream looks healthy:
+# fresh PNG, fresh publish, fresh mirror. That is exactly how an eight-day-old card
+# sat on the desktop unnoticed after a python upgrade ate PyYAML.
+#
+# The desktop widget shows a PNG, so the pixels are the only channel we have. Past
+# this age the card says so on its own face instead of lying quietly.
+STALE_AFTER_MIN = int(os.environ.get("COUNTER_STALE_AFTER_MIN", "120"))
+
+
+def stale_minutes(stats):
+    """Age of the stats in whole minutes, or None when they are fresh enough."""
+    raw = stats.get("generated_at")
+    if not raw:
+        return None
+    try:
+        when = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    age = int((datetime.now(timezone.utc) - when).total_seconds() // 60)
+    return age if age >= STALE_AFTER_MIN else None
 
 # Two compositions, not one scaled. The desktop card's labels land at 3.6pt inside
 # an iPhone widget, and its 1px chamfer at a third of a point; the phone card is
@@ -57,7 +84,12 @@ def build(v):
     if not STATS.exists():
         sys.exit(f"missing {STATS} - run count.py first")
     html = (ROOT / "card" / v["tmpl"]).read_text()
-    stats = STATS.read_text()
+    parsed = json.loads(STATS.read_text())
+    age = stale_minutes(parsed)
+    if age is not None:
+        parsed["stale_min"] = age
+        print(f"  STALE: stats are {age} min old (>= {STALE_AFTER_MIN}) - marking the card")
+    stats = json.dumps(parsed)
     # Replace the marker AND the `null` that follows it. Substituting only the
     # comment leaves `const S = {...} null;` which is a syntax error, and a syntax
     # error means no JS runs and the card renders empty at the correct dimensions.
@@ -180,7 +212,14 @@ def check_render(chrome, src, v):
     k = v["scale"]
 
     def mean(box):
-        px = list(im.crop(box).getdata())
+        crop = im.crop(box)
+        # Pillow 11 renamed getdata() -> get_flattened_data() and removes the old
+        # name in Pillow 14. Reach for whichever this install has: a DeprecationWarning
+        # that becomes an AttributeError would take the render CHECK offline while the
+        # render itself kept succeeding, which is the same silent-failure shape that
+        # let a stale card sit on the desktop for eight days.
+        reader = getattr(crop, "get_flattened_data", None) or crop.getdata
+        px = list(reader())
         return sum(px) / len(px)
 
     checked = 0

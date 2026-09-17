@@ -15,8 +15,8 @@ is drawn natively rather than shown as an image, so the type stays pixel-exact.*
 
 ## Credit
 
-The idea is not mine. I saw a "July with Claude Code" card on Threads — posted by
-**@itsvlady**, watermarked **@danc_danc** — and wanted one that kept itself up to
+The idea is not mine. I saw a "July with Claude Code" card on Threads - posted by
+**@itsvlady**, watermarked **@danc_danc** - and wanted one that kept itself up to
 date instead of being made by hand.
 
 This is a rewrite rather than a copy. It keeps their structure (dark tile grid, big
@@ -45,8 +45,9 @@ change without touching Python.
 
 ## Requirements
 
-- macOS, Claude Code, Python 3 with `pyyaml` (and `pillow` for render checks)
-- [Übersicht](https://tracesof.net/uebersicht/) for the desktop widget — `brew install --cask ubersicht`
+- macOS, Claude Code, Python 3. Dependencies (`pyyaml`, `pillow`) install themselves
+  into a repo-local `.venv` on the first run - see [Requirements are pinned to this repo](#requirements-are-pinned-to-this-repo)
+- [Übersicht](https://tracesof.net/uebersicht/) for the desktop widget - `brew install --cask ubersicht`
 - [Scriptable](https://scriptable.app/) for the iPhone widget (free, optional)
 
 ## Install
@@ -54,7 +55,6 @@ change without touching Python.
 ```sh
 git clone https://github.com/aidenfyf/claude-counter.git
 cd claude-counter
-pip3 install pyyaml pillow
 ./install.sh
 ```
 
@@ -71,7 +71,7 @@ Claude Code deletes transcripts after **30 days** by default. Set this in
 ```
 
 90 days covers the rolling window, a previous-30-day comparison, and calendar
-month-over-month, each with margin. It costs a few GB and **plateaus** — old days
+month-over-month, each with margin. It costs a few GB and **plateaus** - old days
 are pruned as new ones arrive, so it does not grow forever. Whatever the pruner has
 already taken is gone; `archive.py` freezes each completed month so its numbers
 survive even after the raw transcripts are deleted.
@@ -108,7 +108,7 @@ Every phrase counter is a row in `config/patterns.yml`:
 Then reference `S.phrases.my_counter.count` (or `.one_in`) in `card/card.html`,
 and run `./execution/refresh.sh`.
 
-Model prices and subscription tiers live in `config/rates.yml` — update them when
+Model prices and subscription tiers live in `config/rates.yml` - update them when
 pricing changes rather than editing a hardcoded number. The plan you are on is read
 from disk, not hardcoded.
 
@@ -117,7 +117,7 @@ different window.
 
 ### Using it with something other than Claude Code
 
-The card, the renderer and both widgets are agnostic — they only consume
+The card, the renderer and both widgets are agnostic - they only consume
 `out/stats.json`. To point this at another tool, replace the scanner in
 `execution/count.py` and emit the same shape. If your tool writes JSONL
 transcripts, the filtering logic in `scan()` is most of the work already; if it
@@ -127,7 +127,7 @@ writes something else, only `scan()` changes.
 
 The Mac side is unchanged, but Scriptable is iOS-only. `out/stats.json` is a plain
 file, so the usual routes are a KWGT/Tasker widget reading it out of a synced
-folder, or a small home-screen widget app that renders JSON. Not written here —
+folder, or a small home-screen widget app that renders JSON. Not written here -
 happy to take a PR.
 
 ## How it works
@@ -152,6 +152,29 @@ happy to take a PR.
 
 Written down because none of them are obvious and all of them are silent.
 
+**A card that stops counting must say so on its face.** `refresh.sh` runs its three
+steps independently on purpose, so one failure cannot swallow the rest. The cost of
+that: when `count.py` dies, `render.py` still runs, re-renders the last good
+`stats.json`, and republishes it. Fresh PNG, fresh mtime, fresh mirror - every signal
+downstream says healthy, and the card on the desktop is a month behind. Mine sat
+eight days out of date after Homebrew moved `python3` from 3.13 to 3.14 and the new
+interpreter's empty site-packages took `pyyaml` with it. The desktop widget is a PNG,
+so the pixels are the only channel there is: past `COUNTER_STALE_AFTER_MIN` (default
+120) the card now writes **NOT COUNTING - 8 days behind** across its own footer.
+Corollary: `0` is falsy in JavaScript, and `COUNTER_STALE_AFTER_MIN=0` is exactly how
+you test the badge, so the check is `!= null`, not truthiness. The first version of
+this guard silently did nothing on the one path anyone would use to verify it.
+
+**Requirements are pinned to this repo.** A system interpreter is someone else's to
+upgrade. `refresh.sh` keeps a `.venv` beside the code, verifies `import yaml, PIL`
+before every run, and rebuilds it from `requirements.txt` when that import stops
+resolving - so the next Python bump repairs itself on the following tick instead of
+freezing the card until someone notices. Same reasoning for Pillow's
+`getdata()` -> `get_flattened_data()` rename: the render check reaches for whichever
+name the installed version has, because a verification step that quietly goes offline
+while the thing it verifies keeps succeeding is the exact failure this whole section
+is about.
+
 **A human turn is `origin.kind == "human"`.** Everything else that looks like a user
 message is machine noise: tool results, `[Image: …]` stubs, slash-command
 expansions, `<bash-stdout>`, context-continuation summaries, hook feedback. Of 341
@@ -164,7 +187,7 @@ Filtering them out under-reports by roughly a third.
 adding up truncates tens of thousands of times and drifts a couple of percent.
 
 **Use a rolling window, not a calendar month.** Transcripts are pruned on a rolling
-basis, so a rolling card can never claim data the pruner already took — and it is
+basis, so a rolling card can never claim data the pruner already took - and it is
 never near-empty on the 1st.
 
 **Never show a delta against a window you cannot prove is complete.** Measured
@@ -172,7 +195,7 @@ against a partially-pruned previous month it reads `+2000%`, which is the pruner
 not growth. One bogus number discredits every real one beside it.
 
 **A LaunchAgent cannot overwrite an iCloud-tracked file.** It can create new files
-there, but not modify or delete one iCloud has marked `UF_TRACKED` — which it does
+there, but not modify or delete one iCloud has marked `UF_TRACKED` - which it does
 to everything it syncs. Copy-over, truncate, rename-over and unlink-then-write all
 fail, so the first run into a fresh folder succeeds and every run after it fails.
 An Übersicht child process is not subject to that guard, so the mirror lives in the
@@ -180,7 +203,7 @@ widget. No Full Disk Access grant is needed anywhere.
 
 **iCloud tells you a file is there when its bytes are not.** With the Mac asleep,
 the phone still lists `stats.json`, still returns true from `fileExists()`, and
-still claims `isFileDownloaded()` — and then `readString()` hands back an empty
+still claims `isFileDownloaded()` - and then `readString()` hands back an empty
 string, because what is on the device is a dataless placeholder. A widget
 extension gets seconds of runtime, so the on-demand fetch does not reliably land
 inside the render. The card cannot depend on iCloud at draw time: on every
@@ -189,7 +212,7 @@ falls back to that, marking the footer `cached`. The numbers are then as fresh a
 the last sync and never blank, which is the correct trade for a home screen.
 
 **Übersicht serves widgets over `http://localhost:41416`,** so a `file://` image is
-cross-origin and blocked silently — you get alt text and a border, which reads as a
+cross-origin and blocked silently - you get alt text and a border, which reads as a
 broken layout rather than a blocked request. Reference assets relatively.
 
 **Do not put a bitmap of TEXT in a phone widget.** iOS rescales it to the widget's
@@ -221,5 +244,5 @@ actual pixels.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The original card that inspired this is not mine and
+MIT - see [LICENSE](LICENSE). The original card that inspired this is not mine and
 is not included here.

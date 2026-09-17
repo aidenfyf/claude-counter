@@ -14,8 +14,12 @@ WIDGETS="$HOME/Library/Application Support/Übersicht/widgets"
 echo "counter: installing from $DIR"
 
 command -v python3 >/dev/null || { echo "need python3"; exit 1; }
-python3 -c "import yaml" 2>/dev/null || { echo "need pyyaml:  pip3 install pyyaml"; exit 1; }
-python3 -c "import PIL"  2>/dev/null || echo "  note: pillow missing, render checks will be skipped (pip3 install pillow)"
+python3 -m venv --help >/dev/null 2>&1 || { echo "need python3 with venv support"; exit 1; }
+
+# Deliberately NOT checking for pyyaml/pillow in the system interpreter. refresh.sh
+# builds and repairs its own .venv from requirements.txt, so a bare python3 is enough
+# - and gating on system site-packages would reject the very machine state this repo
+# is built to survive (a Homebrew python bump that empties them).
 
 # 1. first run, so there is something to show
 "$DIR/execution/refresh.sh" || true

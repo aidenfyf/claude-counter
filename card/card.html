@@ -175,6 +175,9 @@
   footer { margin-top: 18px; display: flex; justify-content: space-between;
            align-items: center; font-size: 12.5px; color: var(--dim); }
   .delta b { color: #9db4ff; }
+  /* Loud on purpose. A card that has quietly stopped counting is worse than no
+     card: every number on it still looks like today's. */
+  .stale { color: #ff7a45; font-weight: 700; letter-spacing: .01em; }
 </style>
 
 <div class="glow a"></div><div class="glow b"></div>
@@ -217,6 +220,10 @@
   const S = /*__STATS__*/ null;
 
   const n = v => v.toLocaleString("en-US");
+  // Minutes -> "3h" / "8 days". Only ever shown when the card has gone stale.
+  const age = (m) => m < 90 ? `${m}m`
+    : m < 60 * 36 ? `${Math.round(m / 60)}h`
+    : `${Math.round(m / 1440)} days`;
   const $ = id => document.getElementById(id);
   const money = v => "$" + Math.round(v).toLocaleString("en-US");
 
@@ -260,9 +267,16 @@
     $("mult").textContent = (s.cost.multiple ?? 0) + "x";
 
     const when = new Date(s.generated_at);
-    $("stamp").textContent =
+    const stamp =
       `${a.sessions} sessions · ${a.active_days} active days · ${a.tools_per_message} tools per message`
       + ` · updated ${when.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`;
+    // render.py sets stale_min when count.py has stopped producing fresh stats.
+    if (s.stale_min != null) {
+      $("stamp").innerHTML =
+        `<span class="stale">NOT COUNTING &middot; ${age(s.stale_min)} behind</span> &nbsp;·&nbsp; ${stamp}`;
+    } else {
+      $("stamp").textContent = stamp;
+    }
 
     // Rendered only when count.py proved both windows complete. A delta against a
     // pruned window reads +2000% and discredits every other number on the card.
